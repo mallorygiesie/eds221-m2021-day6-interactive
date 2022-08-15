@@ -1,0 +1,34 @@
+---
+title: "interactive"
+author: "Mallory Giesie"
+date: "2022-08-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+```{r}
+wb_indicators<- read_csv(here::here("data","wb_indicators.csv"), na = c("..", ""))
+wb_metadata <- read_csv(here::here("data", "wb_indicators_metadata.csv"))
+```
+
+```{r}
+wb_tidy <- wb_indicators %>% pivot_longer(cols = `2001 [YR2001]`: `2020 [YR2020]`, 
+                                          names_to = "year", 
+                                          values_to = "indicator_value")
+wb_tidy <- wb_tidy %>% separate(col = year, into = c("year", "year_chr"), sep = " ") %>%
+  select(-year_chr, -`Country Code`, -`Series Code`) %>% mutate(year = as.numeric(year)) %>% drop_na('Series Name')
+
+wb_tidy <- wb_tidy %>% pivot_wider(names_from = `Series Name`, values_from = indicator_value)
+
+names(wb_tidy) <- c("country","year","access_clean_fuels_pp", "access_electricity_pp", "co2_emissions_kt", "fossil_fuel_consumption_pp", "water_stress")
+```
+
